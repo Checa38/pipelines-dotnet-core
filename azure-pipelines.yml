@@ -1,17 +1,36 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 stages:
+- stage: PrintVariables
+  jobs:
+  - job: PrintJob
+    pool:
+      name: 'Agent pool'
+    
+    steps:
+    - script: |
+        echo "System Default Working Directory: $(System.DefaultWorkingDirectory)"
+        echo "Build Artifact Staging Directory: $(Build.ArtifactStagingDirectory)"
+      displayName: 'Print System Variables'
+
 - stage: __default
   jobs:
-  - job: Job
+  - job: BuildJob
     pool: 
       name: 'Agent pool'
     
-    variables:
-      buildConfiguration: 'Release'
-
     steps:
     - script: echo "Simulating successful build process"
       displayName: 'Simulated build success'
+
+    - task: CopyFiles@2
+      displayName: 'Copy files to artifact staging directory'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: '**/*.txt'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'MyArtifacts'
+
